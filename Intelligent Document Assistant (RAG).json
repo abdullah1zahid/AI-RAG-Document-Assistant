@@ -1,0 +1,319 @@
+{
+  "name": "Intelligent Document Assistant (RAG)",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1SogJ_oErmjw5OzPLWoh9QL4tsl1QrQ3S",
+          "mode": "list",
+          "cachedResultName": "transformer_ai_paper.pdf",
+          "cachedResultUrl": "https://drive.google.com/file/d/1SogJ_oErmjw5OzPLWoh9QL4tsl1QrQ3S/view?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -848,
+        192
+      ],
+      "id": "951178d6-ed7c-44b3-b17c-4a8fd771dd6c",
+      "name": "Fetch Source PDF",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Zkil4Cu0IOOrMkWj",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1328,
+        192
+      ],
+      "id": "8f6fe4d8-caec-4bf2-8671-481406f46ba8",
+      "name": "Start Training Pipeline1"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {
+          "queryName": "match_documents"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -304,
+        192
+      ],
+      "id": "f2d11373-1c4b-4a82-9749-766c62c48d34",
+      "name": "Store in Vector DB",
+      "credentials": {
+        "supabaseApi": {
+          "id": "HSdU4am376pixnia",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        144,
+        -64
+      ],
+      "id": "c8fca8d9-42ec-4844-9675-18b4105673c7",
+      "name": "Generate Embeddings1",
+      "credentials": {
+        "openAiApi": {
+          "id": "Soxcnc9nqzCSGJbF",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        304
+      ],
+      "id": "72f633d1-1255-4b11-96e3-0bf90fd7aeb8",
+      "name": "Parse Document Content"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -1344,
+        -400
+      ],
+      "id": "ec1abe66-557c-4f73-a600-ceaf3327fe97",
+      "name": "Receive User Query",
+      "webhookId": "9d979bf0-3127-4deb-b149-245400727fa6"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -928,
+        -400
+      ],
+      "id": "2be561c7-d1a3-4f98-98c2-c811b250446b",
+      "name": "AI Reasoning Engine"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -928,
+        -192
+      ],
+      "id": "e0b5b99c-b568-4a36-a785-90ee9b573182",
+      "name": "LLM (GPT-4o)",
+      "credentials": {
+        "openAiApi": {
+          "id": "Soxcnc9nqzCSGJbF",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -832,
+        0
+      ],
+      "id": "3aae2a0a-ac31-4778-885c-ac35693f2842",
+      "name": "Long-Term Memory",
+      "credentials": {
+        "postgres": {
+          "id": "5Qoxem6kCHiV9tNt",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Retrive Answer from query from chat input ",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "topK": 2,
+        "options": {
+          "queryName": "match_documents"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -368,
+        -288
+      ],
+      "id": "5347efd5-d7a7-4e81-b110-c913583a3d47",
+      "name": "Retrieve Relevant Context",
+      "credentials": {
+        "supabaseApi": {
+          "id": "HSdU4am376pixnia",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Fetch Source PDF": {
+      "main": [
+        [
+          {
+            "node": "Store in Vector DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Training Pipeline1": {
+      "main": [
+        [
+          {
+            "node": "Fetch Source PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Embeddings1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Retrieve Relevant Context",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Store in Vector DB",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Document Content": {
+      "ai_document": [
+        [
+          {
+            "node": "Store in Vector DB",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receive User Query": {
+      "main": [
+        [
+          {
+            "node": "AI Reasoning Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM (GPT-4o)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Reasoning Engine",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Long-Term Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Reasoning Engine",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve Relevant Context": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Reasoning Engine",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "16c29ee6-d29c-4152-bcb8-a99841454158",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bc774d01a36b1358fe79243b064579e1db576ef896fd14a4bb69983aaa2dfc31"
+  },
+  "id": "OFVA_u25kDMMAlcw7mHUs",
+  "tags": [
+    {
+      "updatedAt": "2026-01-18T10:54:59.479Z",
+      "createdAt": "2026-01-18T10:54:59.479Z",
+      "id": "pVBJgyJS1reWqhxq",
+      "name": "RAG"
+    }
+  ]
+}
